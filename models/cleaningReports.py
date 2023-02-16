@@ -1,9 +1,12 @@
-from pydantic import BaseModel
+from typing import Optional
 from bson.objectid import ObjectId
+from pydantic import BaseModel, Field, json
+
+json.ENCODERS_BY_TYPE[ObjectId] = str
 
 
 class CleaningReport(BaseModel):
-    _id: ObjectId
+    id: str = Field(alias="_id")
     robot_id: str
     building_name: str
     location_name: str
@@ -22,8 +25,8 @@ class CleaningReport(BaseModel):
     cleaning_zones_area: float
     cleaned_area: float
     missed_cleaning_area: float
-    cleaning_zones_img_url: str
-    cleaned_area_img_url: str
-    cleaning_zones_w_cleaned_img_url: str
-    missed_area_img_url: str
-    complete_img_url: str
+    cleaning_zones_img_url: Optional[str]
+    cleaned_area_img_url: Optional[str]
+    cleaning_zones_w_cleaned_img_url: Optional[str]
+    missed_area_img_url: Optional[str]
+    complete_img_url: Optional[str]

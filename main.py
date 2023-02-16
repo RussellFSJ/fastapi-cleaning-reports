@@ -1,12 +1,16 @@
 import os
+import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import ORJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from core.models.database import *
+from motor.motor_asyncio import AsyncIOMotorClient
+
+from routes import index, cleaningReports
 
 load_dotenv()
 
-app = FastAPI()
+app = FastAPI(default_response_class=ORJSONResponse)
 
 origins = ["http://localhost:8090"]
 
@@ -19,35 +23,24 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+@app.on_event("startup")
+async def startup_db_client():
+    app.mongodb_client = AsyncIOMotorClient(os.environ["DATABASE_URL"])
+    app.mongodb = app.mongodb_client[os.environ["DATABASE_NAME"]]
 
 
-@app.get("/api/cleaning_reports")
-async def get_cleaning_reports():
-    pass
+@app.on_event("shutdown")
+async def startup_db_client():
+    app.mongodb_client.close()
 
 
-@app.get("/api/cleaning_reports{id}")
-async def get_cleaning_reports_by_id(id):
-    pass
+app.include_router(index.router, prefix="")
+app.include_router(cleaningReports.router, prefix="/cleaning_reports")
 
-
-@app.post("/api/cleaning_reports")
-async def post_cleaning_reports(report):
-    pass
-
-
-@app.put("/api/cleaning_reports{id}")
-async def update_cleaning_reports(id, data):
-    pass
-
-
-@app.delete("/api/cleaning_reports{id}")
-async def delete_cleaning_reports(id):
-    pass
-
-
-# if __name__ == "__main__":
-#     uvicorn.run(app, host="0.0.0.0", port=os.environ["PORT"])
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="localhost",
+        port=int(os.environ["PORT"]),
+        reload=bool(os.environ["DEBUG_MODE"]),
+    )

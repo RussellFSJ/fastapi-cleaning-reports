@@ -1,6 +1,6 @@
 import os
 import motor.motor_asyncio
-from core.schemas import cleaningReports
+from models import cleaningReports
 
 
 client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["DATABASE_URL"])
