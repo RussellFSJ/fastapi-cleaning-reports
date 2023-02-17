@@ -1,16 +1,15 @@
 import os
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import ORJSONResponse
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from routes import index, cleaningReports
+from routes import cleaning_reports, index
 
 load_dotenv()
 
-app = FastAPI(default_response_class=ORJSONResponse)
+app = FastAPI()
 
 origins = ["http://localhost:8090"]
 
@@ -35,7 +34,7 @@ async def startup_db_client():
 
 
 app.include_router(index.router, prefix="")
-app.include_router(cleaningReports.router, prefix="/cleaning_reports")
+app.include_router(cleaning_reports.router, prefix="/cleaning_reports")
 
 if __name__ == "__main__":
     uvicorn.run(
