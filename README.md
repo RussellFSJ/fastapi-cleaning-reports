@@ -69,7 +69,7 @@ python app/main.py
 
 ## Swagger UI
 
-`FastAPI` comes with `Swagger UI` to call and test your API directly from the browser. You may access the this UI at [Swagger UI](http://localhost:8092/docs) (this assumes that the app is running on `localhost:8092`).
+`FastAPI` comes with `Swagger UI` to call and test your API directly from the browser. You may access  `Swagger UI` at [http://localhost:8092/docs](http://localhost:8092/docs) (this assumes that the app is running on `localhost:8092`).
 
 ![image](https://user-images.githubusercontent.com/88697228/220016403-58409aea-9b1f-42d6-8f3b-e4987c6c4768.png)
 
