@@ -9,7 +9,7 @@ router = APIRouter()
 @router.get(
     "/",
     status_code=200,
-    response_description="Checks if server is alive",
+    response_description="Check if server is alive",
     tags=["root"],
 )
 def read_root():

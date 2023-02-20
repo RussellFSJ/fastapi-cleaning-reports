@@ -1,7 +1,7 @@
-from models.object_id import PydanticObjectId
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi import APIRouter, Body, Request, status
+from models.object_id import PydanticObjectId
 from models.cleaning_reports import (
     CleaningReportModel,
     MinCleaningReportModel,
@@ -73,7 +73,7 @@ async def get_all_cleaning_reports(request: Request):
     response_description="Get cleaning report by ID",
     tags=["cleaning_report"],
 )
-async def get_cleaning_report_by_id(request: Request, id: PydanticObjectId):
+async def get_cleaning_report_by_id(request: Request, id: str):
     success = False
     message = f"Failed to retrieve cleaning report {id}."
 
@@ -83,7 +83,7 @@ async def get_cleaning_report_by_id(request: Request, id: PydanticObjectId):
         message = "No cleaning report found."
 
         cleaning_report = await request.app.mongodb["cleaning_reports"].find_one(
-            {"_id": id}
+            {"_id": PydanticObjectId(id)}
         )
 
         if cleaning_report != None:
@@ -117,18 +117,16 @@ async def create_cleaning_report(
     request: Request, cleaning_report: UpdateCleaningReportModel = Body(...)
 ):
     success = False
-    message = f"Failed to create cleaning report."
+    message = "Failed to create cleaning report."
 
     document = jsonable_encoder(cleaning_report)
+    created_document = {}
 
     try:
         # _id is automatically inserted if not provided
         new_document = await request.app.mongodb["cleaning_reports"].insert_one(
             document
         )
-
-        if new_document:
-            message = "Successfully created cleaning report."
 
         # query document in collection to get document with _id
         created_document = await request.app.mongodb["cleaning_reports"].find_one(
@@ -139,6 +137,7 @@ async def create_cleaning_report(
         created_document = CleaningReportModel(**created_document)
 
         success = True
+        message = "Successfully created cleaning report."
 
     except Exception as error:
         message += f" {error}"
@@ -162,35 +161,38 @@ async def create_cleaning_report(
 )
 async def update_cleaning_report(
     request: Request,
-    id: PydanticObjectId,
+    id: str,
     cleaning_report: UpdateCleaningReportModel = Body(...),
 ):
     success = False
-    message = f"Failed to update cleaning report."
+    message = f"Failed to update cleaning report {id}."
 
-    document = jsonable_encoder(cleaning_report)
+    document = {k: v for k, v in cleaning_report.dict().items() if v is not None}
+    updated_document = {}
 
-    try:
-        # _id is automatically inserted if not provided
-        new_document = await request.app.mongodb["cleaning_reports"].update_one(
-            document
-        )
+    if len(document) >= 1:
+        try:
+            new_document = await request.app.mongodb["cleaning_reports"].update_one(
+                {"_id": PydanticObjectId(id)}, {"$set": document}
+            )
 
-        if new_document:
-            message = "Successfully updated cleaning report."
+            # checks if document matched for this update
+            if new_document.matched_count != 1:
+                raise Exception(f"Cleaning report {id} does not exist.")
 
-        # query document in collection to get document with _id
-        updated_document = await request.app.mongodb["cleaning_reports"].find_one(
-            {"_id": id}
-        )
+            # query document in collection to get document with _id
+            updated_document = await request.app.mongodb["cleaning_reports"].find_one(
+                {"_id": PydanticObjectId(id)}
+            )
 
-        # validate document against CleaningReportModel
-        updated_document = CleaningReportModel(**updated_document)
+            # validate document against CleaningReportModel
+            updated_document = CleaningReportModel(**updated_document)
 
-        success = True
+            success = True
+            message = f"Successfully updated cleaning report {id}."
 
-    except Exception as error:
-        message += f" {error}"
+        except Exception as error:
+            message += f" {error}"
 
     response = {
         "success": success,
@@ -203,6 +205,33 @@ async def update_cleaning_report(
     )
 
 
-@router.delete("/api/cleaning_reports{id}")
-async def delete_cleaning_reports(id):
-    pass
+@router.delete(
+    "/{id}",
+    status_code=200,
+    response_description="Delete cleaning report",
+    tags=["cleaning_report"],
+)
+async def delete_cleaning_reports(request: Request, id: str):
+    success = False
+    message = f"Failed to delete cleaning report {id}."
+
+    try:
+        delete_result = await request.app.mongodb["cleaning_reports"].delete_one(
+            {"_id": PydanticObjectId(id)}
+        )
+
+        if delete_result.deleted_count == 1:
+            success = True
+            message = f"Successfully deleted cleaning report {id}."
+
+    except Exception as error:
+        message += f" {error}"
+
+    response = {
+        "success": success,
+        "message": message,
+    }
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK, content=jsonable_encoder(response)
+    )

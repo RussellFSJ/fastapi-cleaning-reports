@@ -11,7 +11,7 @@ load_dotenv()
 
 app = FastAPI()
 
-origins = ["http://localhost:8090"]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
