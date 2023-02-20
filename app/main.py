@@ -7,10 +7,12 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from routes import cleaning_reports, index
 
+# load environment variables from .env
 load_dotenv()
 
 app = FastAPI()
 
+# define origins here, use "*" to allow all
 origins = ["*"]
 
 app.add_middleware(
@@ -22,6 +24,7 @@ app.add_middleware(
 )
 
 
+# mongodb connection
 @app.on_event("startup")
 async def startup_db_client():
     app.mongodb_client = AsyncIOMotorClient(os.environ["DATABASE_URL"])
@@ -33,6 +36,7 @@ async def startup_db_client():
     app.mongodb_client.close()
 
 
+# routers
 app.include_router(index.router, prefix="")
 app.include_router(cleaning_reports.router, prefix="/cleaning_reports")
 
