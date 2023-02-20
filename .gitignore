@@ -1,4 +1,13 @@
-.venv
-.vscode
-Pipfile.lock
+# bytecode
+__pycache__
+
+# envrionment variables 
 .env
+
+# virtual environment
+.venv
+Pipfile.lock
+
+# vscode
+.vscode
+

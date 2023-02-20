@@ -8,8 +8,10 @@ fastapi = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 python-dotenv = "*"
 motor = "*"
+orjson = "*"
 
 [dev-packages]
+black = "*"
 
 [requires]
 python_version = "3.8"
