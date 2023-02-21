@@ -24,8 +24,6 @@ Run the following commands to create a virtual environment for this project:
 # creates .venv folder in current directory
 mkdir .venv
 
-OR
-
 # installs from Pipfile
 pipenv install 
 ```
