@@ -82,6 +82,7 @@ async def get_cleaning_report_by_id(request: Request, id: str):
     try:
         message = "No cleaning report found."
 
+        # query document in collection with given _id
         cleaning_report = await request.app.mongodb["cleaning_reports"].find_one(
             {"_id": PydanticObjectId(id)}
         )
@@ -128,7 +129,7 @@ async def create_cleaning_report(
             document
         )
 
-        # query document in collection to get document with _id
+        # query document in collection with given _id
         created_document = await request.app.mongodb["cleaning_reports"].find_one(
             {"_id": new_document.inserted_id}
         )
@@ -282,6 +283,7 @@ async def delete_cleaning_report(request: Request, id: str):
     message = f"Failed to delete cleaning report {id}."
 
     try:
+        # delete document in collection with given _id
         delete_result = await request.app.mongodb["cleaning_reports"].delete_one(
             {"_id": PydanticObjectId(id)}
         )
@@ -329,10 +331,12 @@ async def delete_cleaning_reports(
 
     if len(ids) != 0:
         try:
+            # delete document(s) in collection matching query
             delete_result = await request.app.mongodb["cleaning_reports"].delete_many(
                 query
             )
 
+            # checks if all document(s) matching query are deleted
             if delete_result.deleted_count == len(ids):
                 success = True
                 message = f"Successfully deleted {delete_result.deleted_count} cleaning report(s)."
